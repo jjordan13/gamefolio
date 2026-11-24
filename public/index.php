@@ -13,6 +13,7 @@ use App\Core\View;
 use App\Controllers\MainController;
 use App\Models\Repositories\GameRepository;
 use App\Models\Repositories\UserRepository;
+use App\Controllers\AuthController;
 
 Config::getInstance();
 Session::start();
@@ -23,14 +24,20 @@ $view = new View();
 $router->get('/', [MainController::class, 'index']);
 
 // ВРЕМЕННЫЙ ТЕСТОВЫЙ РОУТ
-$router->get('/debug', function() {
-    $gameRepo = new GameRepository();
-    $games = $gameRepo->findAll();
+//$router->get('/debug', function() {
+//    $gameRepo = new GameRepository();
+//    $games = $gameRepo->findAll();
+//
+//    echo "<pre>";
+//    print_r($games);
+//    echo "</pre>";
+//    exit;
+//});
 
-    echo "<pre>";
-    print_r($games);
-    echo "</pre>";
-    exit;
-});
+$router->get('/register', [AuthController::class, 'registerForm']);
+$router->post('/register', [AuthController::class, 'register']);
+$router->get('/login', [AuthController::class, 'loginForm']);
+$router->post('/login', [AuthController::class, 'login']);
+$router->get('/logout', [AuthController::class, 'logout']);
 
 $router->dispatch(new Request(), $view);

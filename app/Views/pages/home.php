@@ -12,6 +12,13 @@
             <a href="/">Главная</a>
             <a href="/games">Все игры</a>
             <a href="/profiles">Все профили</a>
+            <?php if (\App\Core\Session::isLoggedIn()): ?>
+                <span>Привет, <?= htmlspecialchars($_SESSION['user_nickname'] ?? 'пользователь') ?>!</span> |
+                <a href="/logout">Выйти</a>
+            <?php else: ?>
+                <a href="/register">Регистрация</a> |
+                <a href="/login">Войти</a>
+            <?php endif; ?>
         </nav>
     </header>
 

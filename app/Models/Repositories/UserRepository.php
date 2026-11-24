@@ -43,4 +43,27 @@ class UserRepository
         }
         return $users;
     }
+
+    public function save(string $login, string $passwordHash, string $nickname): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO users (login, password_hash, nickname) 
+         VALUES (:login, :password_hash, :nickname) 
+         RETURNING id'
+        );
+        $stmt->execute([
+            'login' => $login,
+            'password_hash' => $passwordHash,
+            'nickname' => $nickname,
+        ]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function existsByLogin(string $login): bool
+    {
+        $stmt = $this->db->prepare('SELECT 1 FROM users WHERE login = :login LIMIT 1');
+        $stmt->execute(['login' => $login]);
+        return (bool) $stmt->fetch();
+    }
 }
