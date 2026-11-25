@@ -87,4 +87,29 @@ class UserRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
     }
+
+    public function updateLogin(int $userId, string $newLogin): void
+    {
+        $stmt = $this->db->prepare('UPDATE users SET login = :login WHERE id = :id');
+        $stmt->execute(['login' => $newLogin, 'id' => $userId]);
+    }
+
+    public function updatePassword(int $userId, string $passwordHash): void
+    {
+        $stmt = $this->db->prepare('UPDATE users SET password_hash = :hash WHERE id = :id');
+        $stmt->execute(['hash' => $passwordHash, 'id' => $userId]);
+    }
+
+    public function deleteAccount(int $userId): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM users WHERE id = :id');
+        $stmt->execute(['id' => $userId]);
+    }
+
+    public function existsByLoginExcept(string $login, int $exceptUserId): bool
+    {
+        $stmt = $this->db->prepare('SELECT 1 FROM users WHERE login = :login AND id != :id LIMIT 1');
+        $stmt->execute(['login' => $login, 'id' => $exceptUserId]);
+        return (bool) $stmt->fetch();
+    }
 }

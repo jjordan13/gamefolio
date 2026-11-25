@@ -9,18 +9,25 @@ use App\Core\Session;
 use App\Core\View;
 use App\Models\Repositories\GameRepository;
 use App\Services\UploadService;
+use App\Models\Repositories\CommentRepository;
+use App\Models\Repositories\LikeRepository;
 
 class GameController
 {
     private View $view;
     private GameRepository $gameRepo;
     private UploadService $uploadService;
+    private CommentRepository $commentRepo;
+    private LikeRepository $likeRepo;
+
 
     public function __construct(View $view)
     {
         $this->view = $view;
         $this->gameRepo = new GameRepository();
         $this->uploadService = new UploadService();
+        $this->commentRepo = new CommentRepository();
+        $this->likeRepo = new LikeRepository();
     }
 
     // Список всех игр (GET /games)
@@ -44,8 +51,19 @@ class GameController
             return;
         }
 
+        $comments = $this->commentRepo->findByGame($id);
+        $likeCount = $this->likeRepo->countByGame($id);
+        $isLiked = false;
+        $userId = Session::userId();
+        if ($userId !== null) {
+            $isLiked = $this->likeRepo->isLikedByUser($id, $userId);
+        }
+
         $this->view->render('pages/game_details', [
             'game' => $game,
+            'comments' => $comments,
+            'likeCount' => $likeCount,
+            'isLiked' => $isLiked,
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
             'title' => $game['title'] . ' — GameFolio'
@@ -189,5 +207,56 @@ class GameController
 
         Session::flash('success', 'Игра успешно удалена');
         Response::redirect('/profiles/' . $userId);
+    }
+
+    public function addComment(Request $request, array $params): void
+    {
+        $gameId = (int) $params['id'];
+        $userId = Session::userId();
+
+        if ($userId === null) {
+            Session::flash('error', 'Войдите, чтобы оставить комментарий');
+            Response::redirect('/login');
+            return;
+        }
+
+        $content = trim((string) $request->post('content'));
+        if ($content === '') {
+            Session::flash('error', 'Комментарий не может быть пустым');
+            Response::redirect('/games/' . $gameId);
+            return;
+        }
+
+        $this->commentRepo->create($gameId, $userId, $content);
+        Response::redirect('/games/' . $gameId);
+    }
+
+    public function deleteComment(Request $request, array $params): void
+    {
+        $commentId = (int) $params['comment_id'];
+        $userId = Session::userId();
+
+        if ($userId === null) {
+            Response::redirect('/');
+            return;
+        }
+
+        $this->commentRepo->delete($commentId, $userId);
+        // gameId берём из referer или просто редиректим на главную
+        Response::redirect($_SERVER['HTTP_REFERER'] ?? '/');
+    }
+
+    public function toggleLike(Request $request, array $params): void
+    {
+        $gameId = (int) $params['id'];
+        $userId = Session::userId();
+
+        if ($userId === null) {
+            Response::redirect('/login');
+            return;
+        }
+
+        $this->likeRepo->toggle($gameId, $userId);
+        Response::redirect('/games/' . $gameId);
     }
 }

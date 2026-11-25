@@ -20,7 +20,11 @@
 <div class="steam-container">
     <nav>
         <a href="/">Главная</a> | <a href="/games">Все игры</a>
+        <?php if (\App\Core\Session::isLoggedIn()): ?>
+            | <a href="/settings">Настройки</a>
+        <?php endif; ?>
     </nav>
+
     <?php if (!empty($success)): ?>
         <p style="color: green;"><?= htmlspecialchars($success) ?></p>
     <?php endif; ?>
@@ -81,6 +85,66 @@
                 <img src="<?= htmlspecialchars($media['url']) ?>" alt="media">
             <?php endforeach; ?>
         </div>
+
+        <!-- Лайки -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a475e;">
+            <h3>Оценка сообщества</h3>
+            <p>Лайков: <strong><?= (int) $likeCount ?></strong></p>
+
+            <?php if (\App\Core\Session::isLoggedIn()): ?>
+                <form method="POST" action="/games/<?= $game['id'] ?>/like" style="display: inline;">
+                    <button type="submit">
+                        <?= $isLiked ? '❤️ Снять лайк' : '🤍 Поставить лайк' ?>
+                    </button>
+                </form>
+            <?php else: ?>
+                <p><a href="/login">Войдите</a>, чтобы оценить игру</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Комментарии -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a475e;">
+            <h3>Комментарии (<?= count($comments) ?>)</h3>
+
+            <?php if (\App\Core\Session::isLoggedIn()): ?>
+                <form method="POST" action="/games/<?= $game['id'] ?>/comment" style="margin-bottom: 20px;">
+                    <textarea name="content" rows="3" cols="60" required placeholder="Напишите комментарий..."></textarea>
+                    <br>
+                    <button type="submit">Отправить</button>
+                </form>
+            <?php else: ?>
+                <p><a href="/login">Войдите</a>, чтобы оставить комментарий</p>
+            <?php endif; ?>
+
+            <?php if (empty($comments)): ?>
+                <p>Комментариев пока нет. Будьте первым!</p>
+            <?php else: ?>
+                <?php foreach ($comments as $comment): ?>
+                    <div style="background: #171a21; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="color: #66c0f4;">
+                                <?= htmlspecialchars($comment['author_nickname']) ?>
+                            </strong>
+                            <small style="color: #8f98a0;">
+                                <?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?>
+                            </small>
+                        </div>
+                        <p style="margin: 8px 0 0 0;"><?= nl2br(htmlspecialchars($comment['content'])) ?></p>
+
+                        <?php if (\App\Core\Session::userId() === (int) $comment['user_id']): ?>
+                            <form method="POST" action="/comments/<?= $comment['id'] ?>/delete"
+                                  style="display: inline; margin-top: 8px;"
+                                  onsubmit="return confirm('Удалить комментарий?');">
+                                <button type="submit" style="background: none; border: none; color: #ff6b6b; cursor: pointer; padding: 0;">
+                                    Удалить
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
     </div>
 </div>
 </body>

@@ -9,6 +9,9 @@
     <a href="/">Главная</a> |
     <a href="/games">Все игры</a> |
     <a href="/profiles">Все профили</a>
+    <?php if (\App\Core\Session::isLoggedIn()): ?>
+        | <a href="/settings">Настройки</a>
+    <?php endif; ?>
 </nav>
 
 <h1>Разработчики на GameFolio</h1>

@@ -19,6 +19,9 @@
                 <a href="/register">Регистрация</a> |
                 <a href="/login">Войти</a>
             <?php endif; ?>
+            <?php if (\App\Core\Session::isLoggedIn()): ?>
+                | <a href="/settings">Настройки</a>
+            <?php endif; ?>
         </nav>
     </header>
 

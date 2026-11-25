@@ -26,6 +26,9 @@
         <?php if (\App\Core\Session::userId() === $user->id): ?>
             | <a href="/profile/edit" style="color: #66c0f4;">Редактировать профиль</a>
         <?php endif; ?>
+        <?php if (\App\Core\Session::isLoggedIn()): ?>
+            | <a href="/settings">Настройки</a>
+        <?php endif; ?>
     </nav>
 
     <!-- Баннер -->

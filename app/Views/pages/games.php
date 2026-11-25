@@ -11,6 +11,9 @@
     <a href="/profiles">Все профили</a> |
     <a href="/register">Регистрация</a> |
     <a href="/login">Войти</a>
+    <?php if (\App\Core\Session::isLoggedIn()): ?>
+        | <a href="/settings">Настройки</a>
+    <?php endif; ?>
 </nav>
 
 <h1>Каталог игр</h1>

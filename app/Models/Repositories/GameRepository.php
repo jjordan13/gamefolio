@@ -206,4 +206,6 @@ class GameRepository
         $stmt->execute(['id' => $gameId]);
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
+
+
 }

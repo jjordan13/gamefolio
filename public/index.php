@@ -19,6 +19,8 @@ use App\Middleware\AuthMiddleware;
 use App\Controllers\GameController;
 use App\Controllers\ProfileController;
 use App\Controllers\ProfileEditController;
+use App\Controllers\SettingsController;
+
 
 Config::getInstance();
 Session::start();
@@ -48,8 +50,18 @@ $router->post('/games/{id}/edit', [GameController::class, 'update'], [$authMiddl
 $router->post('/games/{id}/delete', [GameController::class, 'delete'], [$authMiddleware]);
 
 $router->get('/profiles', [ProfileController::class, 'index']);
+$router->get('/settings', [SettingsController::class, 'index'], [$authMiddleware]);
+$router->post('/settings/login', [SettingsController::class, 'updateLogin'], [$authMiddleware]);
+$router->post('/settings/password', [SettingsController::class, 'updatePassword'], [$authMiddleware]);
+$router->post('/settings/delete', [SettingsController::class, 'deleteAccount'], [$authMiddleware]);
+
 $router->get('/games/{id}', [GameController::class, 'show']);
 $router->get('/profiles/{id}', [ProfileController::class, 'show']);
+
+// Лайки и комментарии (публичный просмотр уже в /games/{id})
+$router->post('/games/{id}/like', [GameController::class, 'toggleLike'], [$authMiddleware]);
+$router->post('/games/{id}/comment', [GameController::class, 'addComment'], [$authMiddleware]);
+$router->post('/comments/{comment_id}/delete', [GameController::class, 'deleteComment'], [$authMiddleware]);
 
 
 
