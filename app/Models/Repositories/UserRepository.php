@@ -66,4 +66,25 @@ class UserRepository
         $stmt->execute(['login' => $login]);
         return (bool) $stmt->fetch();
     }
+
+    public function updateProfile(int $userId, array $data): void
+    {
+        $fields = [];
+        $params = ['id' => $userId];
+
+        foreach ($data as $key => $value) {
+            if ($value !== null) {
+                $fields[] = "$key = :$key";
+                $params[$key] = $value;
+            }
+        }
+
+        if (empty($fields)) {
+            return;
+        }
+
+        $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+    }
 }

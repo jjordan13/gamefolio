@@ -16,35 +16,41 @@ use App\Models\Repositories\UserRepository;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Middleware\AuthMiddleware;
+use App\Controllers\GameController;
+use App\Controllers\ProfileController;
+use App\Controllers\ProfileEditController;
 
 Config::getInstance();
 Session::start();
 
 $router = new Router();
 $view = new View();
+$authMiddleware = new AuthMiddleware();
 
 $router->get('/', [MainController::class, 'index']);
-
-// ВРЕМЕННЫЙ ТЕСТОВЫЙ РОУТ
-//$router->get('/debug', function() {
-//    $gameRepo = new GameRepository();
-//    $games = $gameRepo->findAll();
-//
-//    echo "<pre>";
-//    print_r($games);
-//    echo "</pre>";
-//    exit;
-//});
-
 $router->get('/register', [AuthController::class, 'registerForm']);
 $router->post('/register', [AuthController::class, 'register']);
 $router->get('/login', [AuthController::class, 'loginForm']);
 $router->post('/login', [AuthController::class, 'login']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
-$authMiddleware = new AuthMiddleware();
-
 // Этот роут защищён middleware. Неавторизованных пользователей он редиректнет на /login
 $router->get('/dashboard', [DashboardController::class, 'index'], [$authMiddleware]);
+$router->get('/profile/edit', [ProfileEditController::class, 'editForm'], [$authMiddleware]);
+$router->post('/profile/edit', [ProfileEditController::class, 'update'], [$authMiddleware]);
+
+$router->get('/games', [GameController::class, 'index']);
+// CRUD игр (только для авторизованных)
+$router->get('/games/create', [GameController::class, 'createForm'], [$authMiddleware]);
+$router->post('/games/create', [GameController::class, 'create'], [$authMiddleware]);
+$router->get('/games/{id}/edit', [GameController::class, 'editForm'], [$authMiddleware]);
+$router->post('/games/{id}/edit', [GameController::class, 'update'], [$authMiddleware]);
+$router->post('/games/{id}/delete', [GameController::class, 'delete'], [$authMiddleware]);
+
+$router->get('/profiles', [ProfileController::class, 'index']);
+$router->get('/games/{id}', [GameController::class, 'show']);
+$router->get('/profiles/{id}', [ProfileController::class, 'show']);
+
+
 
 $router->dispatch(new Request(), $view);
