@@ -7,23 +7,24 @@ class Router
 {
     private array $routes = [];
 
-    public function addRoute(string $method, string $pattern, mixed $handler): void
+    public function addRoute(string $method, string $pattern, mixed $handler, array $middlewares = []): void
     {
         $this->routes[] = [
             'method' => $method,
             'pattern' => $pattern,
             'handler' => $handler,
+            'middlewares' => $middlewares,
         ];
     }
 
-    public function get(string $pattern, mixed $handler): void
+    public function get(string $pattern, mixed $handler, array $middlewares = []): void
     {
-        $this->addRoute('GET', $pattern, $handler);
+        $this->addRoute('GET', $pattern, $handler, $middlewares);
     }
 
-    public function post(string $pattern, mixed $handler): void
+    public function post(string $pattern, mixed $handler, array $middlewares = []): void
     {
-        $this->addRoute('POST', $pattern, $handler);
+        $this->addRoute('POST', $pattern, $handler, $middlewares);
     }
 
     public function dispatch(Request $request, View $view): void
@@ -38,16 +39,19 @@ class Router
 
             $params = $this->match($route['pattern'], $uri);
             if ($params !== null) {
+                // 1. Сначала прогоняем все middleware
+                foreach ($route['middlewares'] as $middleware) {
+                    $middleware->handle($request);
+                }
+
+                // 2. Если middleware не сделали редирект, вызываем контроллер
                 $handler = $route['handler'];
 
-                // Если handler — массив [Класс, метод], создаём контроллер
                 if (is_array($handler)) {
                     [$controllerClass, $action] = $handler;
                     $controller = new $controllerClass($view);
                     $controller->$action($request, $params);
-                }
-                // Если handler — Closure или обычная функция
-                else {
+                } else {
                     $handler($request, $params);
                 }
                 return;
