@@ -41,7 +41,9 @@ class ProfileController
         $user = $this->userRepo->findById($id);
 
         if (!$user) {
-            echo "Пользователь не найден. <a href='/profiles'>Назад к списку</a>";
+            $this->view->renderWithLayout('pages/errors/404', [
+                'pageTitle' => '404 — Пользователь не найден',
+            ]);
             return;
         }
 

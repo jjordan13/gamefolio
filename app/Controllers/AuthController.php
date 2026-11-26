@@ -22,7 +22,8 @@ class AuthController
 
     public function registerForm(Request $request, array $params): void
     {
-        $this->view->render('pages/register', [
+        $this->view->renderWithLayout('pages/register', [
+            'pageTitle' => 'Регистрация — GameFolio',
             'error' => Session::flash('error'),
             'success' => Session::flash('success'),
         ]);
@@ -80,7 +81,8 @@ class AuthController
 
     public function loginForm(Request $request, array $params): void
     {
-        $this->view->render('pages/login', [
+        $this->view->renderWithLayout('pages/login', [
+            'pageTitle' => 'Вход — GameFolio',
             'error' => Session::flash('error'),
             'success' => Session::flash('success'),
         ]);

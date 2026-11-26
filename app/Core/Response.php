@@ -23,7 +23,24 @@ class Response
     public static function notFound(): void
     {
         http_response_code(404);
-        echo '404 — Страница не найдена';
+        $view = new View();
+        $view->renderWithLayout('pages/errors/404', ['pageTitle' => '404 — Страница не найдена']);
+        exit;
+    }
+
+    public static function forbidden(): void
+    {
+        http_response_code(403);
+        $view = new View();
+        $view->renderWithLayout('pages/errors/403', ['pageTitle' => '403 — Доступ запрещён']);
+        exit;
+    }
+
+    public static function serverError(): void
+    {
+        http_response_code(500);
+        $view = new View();
+        $view->renderWithLayout('pages/errors/500', ['pageTitle' => '500 — Внутренняя ошибка']);
         exit;
     }
 }

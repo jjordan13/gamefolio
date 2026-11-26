@@ -53,7 +53,9 @@ class GameController
         $game = $this->gameRepo->findWithDetails($id);
 
         if (!$game) {
-            echo "Игра не найдена. <a href='/games'>Назад к списку</a>";
+            $this->view->renderWithLayout('pages/errors/404', [
+                'pageTitle' => '404 — Игра не найдена',
+            ]);
             return;
         }
 
