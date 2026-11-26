@@ -37,10 +37,32 @@ $router->post('/login', [AuthController::class, 'login']);
 $router->get('/register', [AuthController::class, 'registerForm']);
 $router->post('/register', [AuthController::class, 'register']);
 $router->get('/logout', [AuthController::class, 'logout']);
+
+// Конкретные роуты игр (ДО /games/{id}!)
 $router->get('/games', [GameController::class, 'index']);
+$router->get('/games/create', [GameController::class, 'createForm'], [$authMiddleware]);
+$router->post('/games/create', [GameController::class, 'create'], [$authMiddleware]);
+
+// Роут с параметром {id} — ПОСЛЕДНИМ среди игр
 $router->get('/games/{id}', [GameController::class, 'show']);
+$router->get('/games/{id}/edit', [GameController::class, 'editForm'], [$authMiddleware]);
+$router->post('/games/{id}/edit', [GameController::class, 'update'], [$authMiddleware]);
+$router->post('/games/{id}/delete', [GameController::class, 'delete'], [$authMiddleware]);
+$router->post('/games/{id}/like', [GameController::class, 'toggleLike'], [$authMiddleware]);
+$router->post('/games/{id}/comment', [GameController::class, 'addComment'], [$authMiddleware]);
+
+// Профили
 $router->get('/profiles', [ProfileController::class, 'index']);
+
+// Конкретный роут редактирования профиля (ДО /profiles/{id}!)
+$router->get('/profile/edit', [ProfileEditController::class, 'editForm'], [$authMiddleware]);
+$router->post('/profile/edit', [ProfileEditController::class, 'update'], [$authMiddleware]);
+
+// Роут с параметром {id} — ПОСЛЕДНИМ среди профилей
 $router->get('/profiles/{id}', [ProfileController::class, 'show']);
+
+// Комментарии (удаление)
+$router->post('/comments/{comment_id}/delete', [GameController::class, 'deleteComment'], [$authMiddleware]);
 
 // Предпочтения (тема/язык)
 $router->post('/preferences/theme', [PreferencesController::class, 'setTheme']);
@@ -48,16 +70,6 @@ $router->post('/preferences/lang', [PreferencesController::class, 'setLang']);
 
 // Защищённые роуты
 $router->get('/dashboard', [DashboardController::class, 'index'], [$authMiddleware]);
-$router->get('/profile/edit', [ProfileEditController::class, 'editForm'], [$authMiddleware]);
-$router->post('/profile/edit', [ProfileEditController::class, 'update'], [$authMiddleware]);
-$router->get('/games/create', [GameController::class, 'createForm'], [$authMiddleware]);
-$router->post('/games/create', [GameController::class, 'create'], [$authMiddleware]);
-$router->get('/games/{id}/edit', [GameController::class, 'editForm'], [$authMiddleware]);
-$router->post('/games/{id}/edit', [GameController::class, 'update'], [$authMiddleware]);
-$router->post('/games/{id}/delete', [GameController::class, 'delete'], [$authMiddleware]);
-$router->post('/games/{id}/like', [GameController::class, 'toggleLike'], [$authMiddleware]);
-$router->post('/games/{id}/comment', [GameController::class, 'addComment'], [$authMiddleware]);
-$router->post('/comments/{comment_id}/delete', [GameController::class, 'deleteComment'], [$authMiddleware]);
 $router->get('/settings', [SettingsController::class, 'index'], [$authMiddleware]);
 $router->post('/settings/login', [SettingsController::class, 'updateLogin'], [$authMiddleware]);
 $router->post('/settings/password', [SettingsController::class, 'updatePassword'], [$authMiddleware]);

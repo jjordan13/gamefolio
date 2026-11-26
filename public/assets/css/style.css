@@ -161,6 +161,8 @@ nav a:hover {
 
 .user-menu {
     position: relative;
+    padding-bottom: 8px; /* "Мост" между кнопкой и меню */
+    margin-bottom: -8px; /* Компенсируем padding */
 }
 
 .user-menu-btn {
@@ -187,7 +189,7 @@ nav a:hover {
     position: absolute;
     top: 100%;
     right: 0;
-    margin-top: 8px;
+    margin-top: 0; /* УБРАЛИ отступ */
     background: var(--bg-secondary);
     border: 2px solid var(--border);
     box-shadow: var(--pixel-shadow);
