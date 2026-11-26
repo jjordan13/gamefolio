@@ -1,4 +1,4 @@
-<h1>Настройки аккаунта</h1>
+<h1><?= \App\Core\I18n::t('settings_title') ?></h1>
 
 <?php if (!empty($error)): ?>
     <p class="error"><?= htmlspecialchars($error) ?></p>
@@ -9,44 +9,44 @@
 <?php endif; ?>
 
 <div class="card">
-    <h2>Смена логина</h2>
+    <h2><?= \App\Core\I18n::t('settings_change_login') ?></h2>
     <form method="POST" action="/settings/login">
         <div class="form-group">
-            <label for="login">Новый логин</label>
+            <label for="login"><?= \App\Core\I18n::t('settings_new_login') ?></label>
             <input type="text" id="login" name="login" value="<?= htmlspecialchars($user->login) ?>" required minlength="3" maxlength="50">
         </div>
-        <button type="submit" class="btn">Изменить логин</button>
+        <button type="submit" class="btn"><?= \App\Core\I18n::t('settings_change_login_btn') ?></button>
     </form>
 </div>
 
 <div class="card">
-    <h2>Смена пароля</h2>
+    <h2><?= \App\Core\I18n::t('settings_change_password') ?></h2>
     <form method="POST" action="/settings/password">
         <div class="form-group">
-            <label for="old_password">Текущий пароль</label>
+            <label for="old_password"><?= \App\Core\I18n::t('settings_old_password') ?></label>
             <input type="password" id="old_password" name="old_password" required>
         </div>
         <div class="form-group">
-            <label for="new_password">Новый пароль</label>
+            <label for="new_password"><?= \App\Core\I18n::t('settings_new_password') ?></label>
             <input type="password" id="new_password" name="new_password" required minlength="6">
         </div>
         <div class="form-group">
-            <label for="confirm_password">Подтверждение нового пароля</label>
+            <label for="confirm_password"><?= \App\Core\I18n::t('settings_confirm_password') ?></label>
             <input type="password" id="confirm_password" name="confirm_password" required>
         </div>
-        <button type="submit" class="btn">Изменить пароль</button>
+        <button type="submit" class="btn"><?= \App\Core\I18n::t('settings_change_password_btn') ?></button>
     </form>
 </div>
 
 <div class="card" style="border-color: var(--error);">
-    <h2 style="color: var(--error);">Удаление аккаунта</h2>
-    <p>Это действие необратимо. Все ваши игры, комментарии и лайки будут удалены.</p>
+    <h2 style="color: var(--error);"><?= \App\Core\I18n::t('settings_delete_account') ?></h2>
+    <p><?= \App\Core\I18n::t('settings_delete_warning') ?></p>
     <form method="POST" action="/settings/delete"
-          onsubmit="return confirm('Вы уверены, что хотите удалить аккаунт? Это действие необратимо!');">
+          onsubmit="return confirm('<?= \App\Core\I18n::t('settings_delete_confirm') ?>');">
         <div class="form-group">
-            <label for="password">Введите пароль для подтверждения</label>
+            <label for="password"><?= \App\Core\I18n::t('settings_delete_confirm_text') ?></label>
             <input type="password" id="password" name="password" required>
         </div>
-        <button type="submit" class="btn btn-danger">Удалить аккаунт</button>
+        <button type="submit" class="btn btn-danger"><?= \App\Core\I18n::t('settings_delete_btn') ?></button>
     </form>
 </div>

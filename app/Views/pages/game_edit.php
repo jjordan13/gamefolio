@@ -1,4 +1,4 @@
-<h1>Редактирование игры</h1>
+<h1><?= \App\Core\I18n::t('game_edit_title') ?></h1>
 
 <?php if (!empty($error)): ?>
     <p class="error"><?= htmlspecialchars($error) ?></p>
@@ -10,32 +10,32 @@
 
 <form method="POST" action="/games/<?= $game['id'] ?>/edit" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="title">Название игры *</label>
+        <label for="title"><?= \App\Core\I18n::t('game_create_name') ?> *</label>
         <input type="text" id="title" name="title" value="<?= htmlspecialchars($game['title']) ?>" required maxlength="255">
     </div>
 
     <div class="form-group">
-        <label for="short_description">Краткое описание</label>
+        <label for="short_description"><?= \App\Core\I18n::t('game_create_short_desc') ?></label>
         <textarea id="short_description" name="short_description" rows="3" maxlength="500"><?= htmlspecialchars($game['short_description'] ?? '') ?></textarea>
     </div>
 
     <div class="form-group">
-        <label for="full_description">Полное описание</label>
+        <label for="full_description"><?= \App\Core\I18n::t('game_create_full_desc') ?></label>
         <textarea id="full_description" name="full_description" rows="10"><?= htmlspecialchars($game['full_description'] ?? '') ?></textarea>
     </div>
 
     <div class="form-group">
-        <label for="engine">Движок</label>
+        <label for="engine"><?= \App\Core\I18n::t('game_create_engine') ?></label>
         <input type="text" id="engine" name="engine" value="<?= htmlspecialchars($game['engine'] ?? '') ?>" maxlength="100">
     </div>
 
     <div class="form-group">
-        <label for="genre">Жанр</label>
+        <label for="genre"><?= \App\Core\I18n::t('game_create_genre') ?></label>
         <input type="text" id="genre" name="genre" value="<?= htmlspecialchars($game['genre'] ?? '') ?>" maxlength="100">
     </div>
 
     <div class="form-group">
-        <label>Теги</label>
+        <label><?= \App\Core\I18n::t('game_create_tags') ?></label>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
             <?php
             $selectedTagIds = array_column($game['tags'] ?? [], 'id');
@@ -51,19 +51,19 @@
     </div>
 
     <div class="form-group">
-        <label>Медиагалерея</label>
+        <label><?= \App\Core\I18n::t('game_edit_media_gallery') ?></label>
         <?php if (empty($game['media'])): ?>
-            <p>Медиафайлов пока нет.</p>
+            <p><?= \App\Core\I18n::t('game_edit_no_media') ?></p>
         <?php else: ?>
             <?php foreach ($game['media'] as $media): ?>
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 2px;">
                     <img src="<?= htmlspecialchars($media['url']) ?>" alt="" style="width: 160px; height: 90px; object-fit: cover;">
                     <label>
                         <input type="checkbox" name="delete_media[]" value="<?= $media['id'] ?>">
-                        Удалить
+                        <?= \App\Core\I18n::t('game_edit_delete_media') ?>
                     </label>
                     <?php if ($media['is_cover']): ?>
-                        <span style="color: var(--accent); font-size: 12px;">(обложка)</span>
+                        <span style="color: var(--accent); font-size: 12px;"><?= \App\Core\I18n::t('game_edit_cover') ?></span>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
@@ -71,10 +71,10 @@
     </div>
 
     <div class="form-group">
-        <label>Добавить медиафайлы</label>
+        <label><?= \App\Core\I18n::t('game_edit_add_media') ?></label>
         <input type="file" name="media[]" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
     </div>
 
-    <button type="submit" class="btn">Сохранить изменения</button>
-    <a href="/games/<?= $game['id'] ?>" class="btn btn-outline">Отмена</a>
+    <button type="submit" class="btn"><?= \App\Core\I18n::t('game_edit_save') ?></button>
+    <a href="/games/<?= $game['id'] ?>" class="btn btn-outline"><?= \App\Core\I18n::t('game_create_cancel') ?></a>
 </form>

@@ -19,7 +19,7 @@ $socials = json_decode($user->social_links ?? '{}', true);
 
         <?php if (!empty($socials)): ?>
             <div style="margin-top: 15px;">
-                <strong>Соцсети:</strong>
+                <strong><?= \App\Core\I18n::t('profile_socials') ?>:</strong>
                 <ul>
                     <?php foreach ($socials as $name => $link): ?>
                         <li><a href="<?= htmlspecialchars($link) ?>" target="_blank"><?= htmlspecialchars($name) ?></a></li>
@@ -30,27 +30,27 @@ $socials = json_decode($user->social_links ?? '{}', true);
 
         <?php if (\App\Core\Session::userId() === $user->id): ?>
             <p style="margin-top: 16px;">
-                <a href="/profile/edit" class="btn">Редактировать профиль</a>
+                <a href="/profile/edit" class="btn"><?= \App\Core\I18n::t('profile_edit_btn') ?></a>
             </p>
         <?php endif; ?>
     </div>
 </div>
 
 <div class="games-section">
-    <h2>Проекты разработчика (<?= count($games) ?>)</h2>
+    <h2><?= \App\Core\I18n::t('profile_projects') ?> (<?= count($games) ?>)</h2>
 
     <?php if (empty($games)): ?>
-        <p>У этого разработчика пока нет опубликованных игр.</p>
+        <p><?= \App\Core\I18n::t('profile_no_games') ?></p>
     <?php else: ?>
         <div class="card-grid">
             <?php foreach ($games as $game): ?>
                 <div class="card">
                     <h3><a href="/games/<?= $game->id ?>"><?= htmlspecialchars($game->title) ?></a></h3>
                     <p style="color: var(--text-secondary); font-size: 13px;">
-                        <?= htmlspecialchars($game->engine ?? 'Движок не указан') ?> •
-                        <?= htmlspecialchars($game->genre ?? 'Жанр не указан') ?>
+                        <?= htmlspecialchars($game->engine ?? \App\Core\I18n::t('games_no_engine')) ?> •
+                        <?= htmlspecialchars($game->genre ?? \App\Core\I18n::t('games_no_genre')) ?>
                     </p>
-                    <p><?= htmlspecialchars(mb_substr($game->short_description ?? '', 0, 100)) ?></p>
+                    <p style="font-size: 14px;"><?= htmlspecialchars(mb_substr($game->short_description ?? '', 0, 100)) ?></p>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -58,7 +58,7 @@ $socials = json_decode($user->social_links ?? '{}', true);
 
     <?php if (\App\Core\Session::userId() === $user->id): ?>
         <div class="card" style="text-align: center; background: var(--bg-hover);">
-            <a href="/games/create" style="font-size: 24px; color: var(--accent);">+ Добавить игру</a>
+            <a href="/games/create" style="font-size: 24px; color: var(--accent);"><?= \App\Core\I18n::t('profile_add_game') ?></a>
         </div>
     <?php endif; ?>
 </div>

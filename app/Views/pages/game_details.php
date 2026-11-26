@@ -1,6 +1,9 @@
 <div class="game-header">
     <h1><?= htmlspecialchars($game['title']) ?></h1>
-    <p class="game-author">Разработчик: <a href="/profiles/<?= $game['author_id'] ?>"><?= htmlspecialchars($game['author_nickname']) ?></a></p>
+    <p class="game-author">
+        <?= \App\Core\I18n::t('game_details_author') ?>:
+        <a href="/profiles/<?= $game['author_id'] ?>"><?= htmlspecialchars($game['author_nickname']) ?></a>
+    </p>
 </div>
 
 <?php if (!empty($success)): ?>
@@ -11,7 +14,6 @@
 <?php endif; ?>
 
 <div class="game-main">
-    <!-- Карусель медиа -->
     <div class="media-carousel">
         <div class="media-carousel-inner" id="mediaCarousel">
             <?php if (empty($game['media'])): ?>
@@ -35,18 +37,17 @@
         <?php endif; ?>
     </div>
 
-    <!-- Инфо-блок -->
     <div class="game-info">
-        <h3>Об игре</h3>
-        <p><?= htmlspecialchars($game['short_description'] ?? 'Описание отсутствует') ?></p>
+        <h3><?= \App\Core\I18n::t('game_details_about') ?></h3>
+        <p><?= htmlspecialchars($game['short_description'] ?? \App\Core\I18n::t('game_details_no_description')) ?></p>
 
-        <p><strong>Движок:</strong> <?= htmlspecialchars($game['engine'] ?? 'Не указан') ?></p>
-        <p><strong>Жанр:</strong> <?= htmlspecialchars($game['genre'] ?? 'Не указан') ?></p>
+        <p><strong><?= \App\Core\I18n::t('game_details_engine') ?>:</strong> <?= htmlspecialchars($game['engine'] ?? \App\Core\I18n::t('game_details_not_specified')) ?></p>
+        <p><strong><?= \App\Core\I18n::t('game_details_genre') ?>:</strong> <?= htmlspecialchars($game['genre'] ?? \App\Core\I18n::t('game_details_not_specified')) ?></p>
 
-        <h4>Теги:</h4>
+        <h4><?= \App\Core\I18n::t('game_details_tags') ?>:</h4>
         <div>
             <?php if (empty($gameTags)): ?>
-                <span style="color: var(--text-secondary);">Теги не указаны</span>
+                <span style="color: var(--text-secondary);"><?= \App\Core\I18n::t('game_details_no_tags') ?></span>
             <?php else: ?>
                 <?php foreach ($gameTags as $tag): ?>
                     <a href="/games?tag=<?= $tag['id'] ?>" class="tag"><?= htmlspecialchars($tag['name']) ?></a>
@@ -56,11 +57,11 @@
 
         <?php if (\App\Core\Session::userId() === (int) $game['author_id']): ?>
             <div style="margin-top: 20px;">
-                <a href="/games/<?= $game['id'] ?>/edit" class="btn">Редактировать</a>
+                <a href="/games/<?= $game['id'] ?>/edit" class="btn"><?= \App\Core\I18n::t('game_details_edit') ?></a>
                 <form method="POST" action="/games/<?= $game['id'] ?>/delete"
                       style="display: inline; margin-left: 10px;"
-                      onsubmit="return confirm('Удалить игру безвозвратно?');">
-                    <button type="submit" class="btn btn-danger">Удалить</button>
+                      onsubmit="return confirm('<?= \App\Core\I18n::t('game_details_delete_confirm') ?>');">
+                    <button type="submit" class="btn btn-danger"><?= \App\Core\I18n::t('game_details_delete') ?></button>
                 </form>
             </div>
         <?php endif; ?>
@@ -68,42 +69,40 @@
 </div>
 
 <div class="game-description">
-    <h2>Подробное описание</h2>
-    <p><?= nl2br(htmlspecialchars($game['full_description'] ?? 'Подробное описание не добавлено.')) ?></p>
+    <h2><?= \App\Core\I18n::t('game_details_full_description') ?></h2>
+    <p><?= nl2br(htmlspecialchars($game['full_description'] ?? \App\Core\I18n::t('game_details_no_full_description'))) ?></p>
 </div>
 
-<!-- Лайки -->
 <div class="card" style="margin-bottom: 24px;">
-    <h3>Оценка сообщества</h3>
-    <p>Лайков: <strong><?= (int) $likeCount ?></strong></p>
+    <h3><?= \App\Core\I18n::t('game_details_community_rating') ?></h3>
+    <p><?= \App\Core\I18n::t('game_details_likes') ?>: <strong><?= (int) $likeCount ?></strong></p>
 
     <?php if (\App\Core\Session::isLoggedIn()): ?>
         <form method="POST" action="/games/<?= $game['id'] ?>/like" style="display: inline;">
             <button type="submit" class="btn">
-                <?= $isLiked ? '❤️ Снять лайк' : '🤍 Поставить лайк' ?>
+                <?= $isLiked ? \App\Core\I18n::t('game_details_unlike_btn') : \App\Core\I18n::t('game_details_like_btn') ?>
             </button>
         </form>
     <?php else: ?>
-        <p><a href="/login">Войдите</a>, чтобы оценить игру</p>
+        <p><a href="/login"><?= \App\Core\I18n::t('game_details_login_to_rate') ?></a><?= \App\Core\I18n::t('game_details_login_to_rate_text') ?></p>
     <?php endif; ?>
 </div>
 
-<!-- Комментарии -->
 <div class="comments-section">
-    <h3>Комментарии (<?= count($comments) ?>)</h3>
+    <h3><?= \App\Core\I18n::t('game_details_comments') ?> (<?= count($comments) ?>)</h3>
 
     <?php if (\App\Core\Session::isLoggedIn()): ?>
         <form method="POST" action="/games/<?= $game['id'] ?>/comment" style="margin-bottom: 20px;">
-            <textarea name="content" rows="3" required placeholder="Напишите комментарий..."></textarea>
+            <textarea name="content" rows="3" required placeholder="<?= \App\Core\I18n::t('game_details_comment_placeholder') ?>"></textarea>
             <br><br>
-            <button type="submit" class="btn">Отправить</button>
+            <button type="submit" class="btn"><?= \App\Core\I18n::t('game_details_comment_submit') ?></button>
         </form>
     <?php else: ?>
-        <p><a href="/login">Войдите</a>, чтобы оставить комментарий</p>
+        <p><a href="/login"><?= \App\Core\I18n::t('game_details_login_to_comment') ?></a><?= \App\Core\I18n::t('game_details_login_to_comment_text') ?></p>
     <?php endif; ?>
 
     <?php if (empty($comments)): ?>
-        <p>Комментариев пока нет. Будьте первым!</p>
+        <p><?= \App\Core\I18n::t('game_details_no_comments') ?></p>
     <?php else: ?>
         <?php foreach ($comments as $comment): ?>
             <div class="comment">
@@ -116,9 +115,9 @@
                 <?php if (\App\Core\Session::userId() === (int) $comment['user_id']): ?>
                     <form method="POST" action="/comments/<?= $comment['id'] ?>/delete"
                           style="display: inline; margin-top: 8px;"
-                          onsubmit="return confirm('Удалить комментарий?');">
+                          onsubmit="return confirm('<?= \App\Core\I18n::t('game_details_comment_delete_confirm') ?>');">
                         <button type="submit" style="background: none; border: none; color: var(--error); cursor: pointer;">
-                            Удалить
+                            <?= \App\Core\I18n::t('game_details_comment_delete') ?>
                         </button>
                     </form>
                 <?php endif; ?>
