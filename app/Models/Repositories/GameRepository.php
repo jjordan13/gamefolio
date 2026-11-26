@@ -21,7 +21,6 @@ class GameRepository
         $stmt = $this->db->prepare('SELECT * FROM games WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch();
-
         return $data ? Game::fromArray($data) : null;
     }
 
@@ -35,11 +34,26 @@ class GameRepository
         return $games;
     }
 
+    public function findAllWithAuthor(): array
+    {
+        $sql = "SELECT g.*, u.nickname AS author_nickname 
+                FROM games g 
+                JOIN users u ON g.author_id = u.id 
+                ORDER BY g.created_at DESC";
+        $stmt = $this->db->query($sql);
+        $games = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $game = Game::fromArray($row);
+            $game->author_nickname = $row['author_nickname'];
+            $games[] = $game;
+        }
+        return $games;
+    }
+
     public function findByAuthor(int $authorId): array
     {
         $stmt = $this->db->prepare('SELECT * FROM games WHERE author_id = :author_id ORDER BY created_at DESC');
         $stmt->execute(['author_id' => $authorId]);
-
         $games = [];
         foreach ($stmt->fetchAll() as $row) {
             $games[] = Game::fromArray($row);
@@ -47,28 +61,8 @@ class GameRepository
         return $games;
     }
 
-    public function findAllWithAuthor(): array
-    {
-        $sql = "SELECT g.*, u.nickname AS author_nickname 
-                FROM games g 
-                JOIN users u ON g.author_id = u.id 
-                ORDER BY g.created_at DESC";
-
-        $stmt = $this->db->query($sql);
-        $games = [];
-
-        foreach ($stmt->fetchAll() as $row) {
-            $game = Game::fromArray($row);
-            $game->author_nickname = $row['author_nickname'];
-            $games[] = $game;
-        }
-
-        return $games;
-    }
-
     public function findWithDetails(int $id): ?array
     {
-        // 1. Игра + автор
         $stmt = $this->db->prepare(
             "SELECT g.*, u.nickname AS author_nickname 
              FROM games g 
@@ -77,12 +71,10 @@ class GameRepository
         );
         $stmt->execute(['id' => $id]);
         $game = $stmt->fetch();
-
         if (!$game) {
             return null;
         }
 
-        // 2. Теги
         $stmt = $this->db->prepare(
             "SELECT t.* FROM tags t 
              JOIN game_tags gt ON t.id = gt.tag_id 
@@ -91,7 +83,6 @@ class GameRepository
         $stmt->execute(['game_id' => $id]);
         $game['tags'] = $stmt->fetchAll();
 
-        // 3. Медиа (скриншоты/видео)
         $stmt = $this->db->prepare(
             "SELECT * FROM game_media 
              WHERE game_id = :game_id 
@@ -108,8 +99,8 @@ class GameRepository
     {
         $stmt = $this->db->prepare(
             'INSERT INTO games (author_id, title, short_description, full_description, engine, genre) 
-         VALUES (:author_id, :title, :short_description, :full_description, :engine, :genre) 
-         RETURNING id'
+             VALUES (:author_id, :title, :short_description, :full_description, :engine, :genre) 
+             RETURNING id'
         );
         $stmt->execute([
             'author_id' => $authorId,
@@ -119,7 +110,6 @@ class GameRepository
             'engine' => $engine ?: null,
             'genre' => $genre ?: null,
         ]);
-
         return (int) $stmt->fetchColumn();
     }
 
@@ -127,13 +117,13 @@ class GameRepository
     {
         $stmt = $this->db->prepare(
             'UPDATE games 
-         SET title = :title,
-             short_description = :short_description,
-             full_description = :full_description,
-             engine = :engine,
-             genre = :genre,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = :id'
+             SET title = :title,
+                 short_description = :short_description,
+                 full_description = :full_description,
+                 engine = :engine,
+                 genre = :genre,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id'
         );
         $stmt->execute([
             'id' => $gameId,
@@ -162,13 +152,13 @@ class GameRepository
     {
         $stmt = $this->db->prepare(
             'INSERT INTO game_media (game_id, url, type, sort_order, is_cover) 
-         VALUES (:game_id, :url, :type, :sort_order, :is_cover)'
+             VALUES (:game_id, :url, :type, :sort_order, :is_cover)'
         );
-        $stmt->bindValue('game_id', $gameId, \PDO::PARAM_INT);
+        $stmt->bindValue('game_id', $gameId, PDO::PARAM_INT);
         $stmt->bindValue('url', $url);
         $stmt->bindValue('type', $type);
-        $stmt->bindValue('sort_order', $sortOrder, \PDO::PARAM_INT);
-        $stmt->bindValue('is_cover', $isCover, \PDO::PARAM_BOOL);
+        $stmt->bindValue('sort_order', $sortOrder, PDO::PARAM_INT);
+        $stmt->bindValue('is_cover', $isCover, PDO::PARAM_BOOL);
         $stmt->execute();
     }
 
@@ -184,19 +174,17 @@ class GameRepository
         if (empty($mediaIds)) {
             return [];
         }
-
         $placeholders = implode(',', array_fill(0, count($mediaIds), '?'));
         $stmt = $this->db->prepare(
             "SELECT url FROM game_media WHERE game_id = ? AND id IN ($placeholders)"
         );
         $stmt->execute(array_merge([$gameId], $mediaIds));
-        $urls = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        $urls = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         $stmt = $this->db->prepare(
             "DELETE FROM game_media WHERE game_id = ? AND id IN ($placeholders)"
         );
         $stmt->execute(array_merge([$gameId], $mediaIds));
-
         return $urls;
     }
 
@@ -204,8 +192,73 @@ class GameRepository
     {
         $stmt = $this->db->prepare('SELECT url FROM game_media WHERE game_id = :id');
         $stmt->execute(['id' => $gameId]);
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
+    public function findAllTags(): array
+    {
+        $stmt = $this->db->query('SELECT * FROM tags ORDER BY name');
+        return $stmt->fetchAll();
+    }
 
+    public function findTagsByGame(int $gameId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT t.* FROM tags t 
+             JOIN game_tags gt ON t.id = gt.tag_id 
+             WHERE gt.game_id = :game_id 
+             ORDER BY t.name'
+        );
+        $stmt->execute(['game_id' => $gameId]);
+        return $stmt->fetchAll();
+    }
+
+    public function syncGameTags(int $gameId, array $tagIds): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM game_tags WHERE game_id = :game_id');
+        $stmt->execute(['game_id' => $gameId]);
+
+        if (!empty($tagIds)) {
+            $stmt = $this->db->prepare('INSERT INTO game_tags (game_id, tag_id) VALUES (:game_id, :tag_id)');
+            foreach ($tagIds as $tagId) {
+                $stmt->execute(['game_id' => $gameId, 'tag_id' => (int) $tagId]);
+            }
+        }
+    }
+
+    public function search(string $query = '', ?int $tagId = null): array
+    {
+        $sql = 'SELECT g.*, u.nickname AS author_nickname 
+                FROM games g 
+                JOIN users u ON g.author_id = u.id';
+        $conditions = [];
+        $params = [];
+
+        if ($query !== '') {
+            $conditions[] = 'g.title ILIKE :query';
+            $params['query'] = '%' . $query . '%';
+        }
+
+        if ($tagId !== null) {
+            $sql .= ' JOIN game_tags gt ON g.id = gt.game_id';
+            $conditions[] = 'gt.tag_id = :tag_id';
+            $params['tag_id'] = $tagId;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+
+        $sql .= ' ORDER BY g.created_at DESC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $games = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $game = Game::fromArray($row);
+            $game->author_nickname = $row['author_nickname'];
+            $games[] = $game;
+        }
+        return $games;
+    }
 }

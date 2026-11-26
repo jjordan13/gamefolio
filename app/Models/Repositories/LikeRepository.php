@@ -34,11 +34,11 @@ class LikeRepository
         if ($this->isLikedByUser($gameId, $userId)) {
             $stmt = $this->db->prepare('DELETE FROM likes WHERE game_id = :game_id AND user_id = :user_id');
             $stmt->execute(['game_id' => $gameId, 'user_id' => $userId]);
-            return false; // лайк снят
+            return false;
         }
 
         $stmt = $this->db->prepare('INSERT INTO likes (game_id, user_id) VALUES (:game_id, :user_id)');
         $stmt->execute(['game_id' => $gameId, 'user_id' => $userId]);
-        return true; // лайк поставлен
+        return true;
     }
 }

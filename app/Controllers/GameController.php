@@ -7,10 +7,10 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
 use App\Core\View;
-use App\Models\Repositories\GameRepository;
-use App\Services\UploadService;
 use App\Models\Repositories\CommentRepository;
+use App\Models\Repositories\GameRepository;
 use App\Models\Repositories\LikeRepository;
+use App\Services\UploadService;
 
 class GameController
 {
@@ -19,7 +19,6 @@ class GameController
     private UploadService $uploadService;
     private CommentRepository $commentRepo;
     private LikeRepository $likeRepo;
-
 
     public function __construct(View $view)
     {
@@ -30,17 +29,24 @@ class GameController
         $this->likeRepo = new LikeRepository();
     }
 
-    // Список всех игр (GET /games)
     public function index(Request $request, array $params): void
     {
-        $games = $this->gameRepo->findAllWithAuthor();
-        $this->view->render('pages/games', [
+        $query = trim((string) $request->get('q'));
+        $tagId = $request->get('tag');
+        $tagId = $tagId !== null && $tagId !== '' ? (int) $tagId : null;
+
+        $games = $this->gameRepo->search($query, $tagId);
+        $tags = $this->gameRepo->findAllTags();
+
+        $this->view->renderWithLayout('pages/games', [
+            'pageTitle' => 'Все игры — GameFolio',
             'games' => $games,
-            'title' => 'Все игры — GameFolio'
+            'tags' => $tags,
+            'currentQuery' => $query,
+            'currentTagId' => $tagId,
         ]);
     }
 
-    // Страница одной игры (GET /games/{id})
     public function show(Request $request, array $params): void
     {
         $id = (int) $params['id'];
@@ -59,27 +65,30 @@ class GameController
             $isLiked = $this->likeRepo->isLikedByUser($id, $userId);
         }
 
-        $this->view->render('pages/game_details', [
+        $gameTags = $this->gameRepo->findTagsByGame($id);
+
+        $this->view->renderWithLayout('pages/game_details', [
             'game' => $game,
+            'gameTags' => $gameTags,
             'comments' => $comments,
             'likeCount' => $likeCount,
             'isLiked' => $isLiked,
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
-            'title' => $game['title'] . ' — GameFolio'
+            'pageTitle' => $game['title'] . ' — GameFolio'
         ]);
     }
 
-    // Форма добавления игры (GET /games/create)
     public function createForm(Request $request, array $params): void
     {
-        $this->view->render('pages/game_create', [
+        $tags = $this->gameRepo->findAllTags();
+        $this->view->renderWithLayout('pages/game_create', [
+            'pageTitle' => 'Добавить игру — GameFolio',
             'error' => Session::flash('error'),
-            'title' => 'Добавить игру — GameFolio'
+            'tags' => $tags,
         ]);
     }
 
-    // Обработка добавления игры (POST /games/create)
     public function create(Request $request, array $params): void
     {
         $userId = Session::userId();
@@ -107,18 +116,20 @@ class GameController
             }
         }
 
+        $tagIds = $request->post('tags', []);
+        if (is_array($tagIds)) {
+            $this->gameRepo->syncGameTags($gameId, $tagIds);
+        }
+
         Session::flash('success', 'Игра успешно добавлена');
         Response::redirect('/games/' . $gameId);
     }
 
-
-    // Форма редактирования игры (GET /games/{id}/edit)
     public function editForm(Request $request, array $params): void
     {
         $gameId = (int) $params['id'];
         $userId = Session::userId();
 
-        // Проверяем, что пользователь является владельцем игры
         if (!$this->gameRepo->isOwner($gameId, $userId)) {
             Session::flash('error', 'Вы не можете редактировать эту игру');
             Response::redirect('/games/' . $gameId);
@@ -126,16 +137,17 @@ class GameController
         }
 
         $game = $this->gameRepo->findWithDetails($gameId);
+        $tags = $this->gameRepo->findAllTags();
 
-        $this->view->render('pages/game_edit', [
+        $this->view->renderWithLayout('pages/game_edit', [
+            'pageTitle' => 'Редактировать игру — GameFolio',
             'game' => $game,
+            'tags' => $tags,
             'error' => Session::flash('error'),
             'success' => Session::flash('success'),
-            'title' => 'Редактировать игру — GameFolio'
         ]);
     }
 
-    // Обработка редактирования игры (POST /games/{id}/edit)
     public function update(Request $request, array $params): void
     {
         $gameId = (int) $params['id'];
@@ -162,7 +174,6 @@ class GameController
             'genre' => trim((string) $request->post('genre')) ?: null,
         ]);
 
-        // Удаление отмеченных медиа
         $toDelete = $request->post('delete_media', []);
         if (is_array($toDelete) && !empty($toDelete)) {
             $ids = array_map('intval', $toDelete);
@@ -172,7 +183,6 @@ class GameController
             }
         }
 
-        // Добавление новых медиа в конец галереи
         if (!empty($_FILES['media']['name'][0])) {
             $paths = $this->uploadService->uploadMultipleFiles($_FILES['media'], 'games');
             $order = $this->gameRepo->getNextMediaOrder($gameId);
@@ -181,11 +191,15 @@ class GameController
             }
         }
 
+        $tagIds = $request->post('tags', []);
+        if (is_array($tagIds)) {
+            $this->gameRepo->syncGameTags($gameId, $tagIds);
+        }
+
         Session::flash('success', 'Игра успешно обновлена');
         Response::redirect('/games/' . $gameId);
     }
 
-    // Удаление игры (POST /games/{id}/delete)
     public function delete(Request $request, array $params): void
     {
         $gameId = (int) $params['id'];
@@ -197,7 +211,6 @@ class GameController
             return;
         }
 
-        // Сначала собираем пути файлов, потом удаляем запись (каскадом снесёт game_media)
         $urls = $this->gameRepo->findAllMediaUrls($gameId);
         $this->gameRepo->delete($gameId);
 
@@ -242,7 +255,6 @@ class GameController
         }
 
         $this->commentRepo->delete($commentId, $userId);
-        // gameId берём из referer или просто редиректим на главную
         Response::redirect($_SERVER['HTTP_REFERER'] ?? '/');
     }
 

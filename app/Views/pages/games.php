@@ -1,40 +1,40 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
-</head>
-<body>
-<nav>
-    <a href="/">Главная</a> |
-    <a href="/games">Все игры</a> |
-    <a href="/profiles">Все профили</a> |
-    <a href="/register">Регистрация</a> |
-    <a href="/login">Войти</a>
-    <?php if (\App\Core\Session::isLoggedIn()): ?>
-        | <a href="/settings">Настройки</a>
-    <?php endif; ?>
-</nav>
-
 <h1>Каталог игр</h1>
 
-<?php if (empty($games)): ?>
-    <p>Игры пока не добавлены.</p>
-<?php else: ?>
-    <ul>
-        <?php foreach ($games as $game): ?>
-            <li>
-                <strong><?= htmlspecialchars($game->title) ?></strong>
-                (<?= htmlspecialchars($game->engine ?? 'Движок не указан') ?>)
-                — Автор: <?= htmlspecialchars($game->author_nickname) ?>
-                <br>
-                <em><?= htmlspecialchars($game->short_description ?? 'Без описания') ?></em>
-                <br>
-                <a href="/games/<?= $game->id ?>">Подробнее</a>
-            </li>
-            <br>
+<form method="GET" action="/games" class="search-filters">
+    <input type="text" name="q" value="<?= htmlspecialchars($currentQuery ?? '') ?>"
+           placeholder="Поиск по названию...">
+
+    <select name="tag">
+        <option value="">Все теги</option>
+        <?php foreach ($tags as $tag): ?>
+            <option value="<?= $tag['id'] ?>"
+                    <?= ($currentTagId ?? null) === $tag['id'] ? 'selected' : '' ?>>
+                <?= htmlspecialchars($tag['name']) ?>
+            </option>
         <?php endforeach; ?>
-    </ul>
+    </select>
+
+    <button type="submit" class="btn">Найти</button>
+
+    <?php if (!empty($currentQuery) || $currentTagId !== null): ?>
+        <a href="/games" class="btn btn-outline">Сбросить</a>
+    <?php endif; ?>
+</form>
+
+<?php if (empty($games)): ?>
+    <p>Игры не найдены. Попробуйте изменить параметры поиска.</p>
+<?php else: ?>
+    <div class="card-grid">
+        <?php foreach ($games as $game): ?>
+            <div class="card">
+                <h3><a href="/games/<?= $game->id ?>"><?= htmlspecialchars($game->title) ?></a></h3>
+                <p style="color: var(--text-secondary); font-size: 13px;">
+                    <?= htmlspecialchars($game->engine ?? 'Движок не указан') ?> •
+                    <?= htmlspecialchars($game->genre ?? 'Жанр не указан') ?>
+                </p>
+                <p>Автор: <a href="/profiles/<?= $game->author_id ?>"><?= htmlspecialchars($game->author_nickname) ?></a></p>
+                <p><?= htmlspecialchars($game->short_description ?? 'Без описания') ?></p>
+            </div>
+        <?php endforeach; ?>
+    </div>
 <?php endif; ?>
-</body>
-</html>

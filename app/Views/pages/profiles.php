@@ -1,37 +1,26 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
-</head>
-<body>
-<nav>
-    <a href="/">Главная</a> |
-    <a href="/games">Все игры</a> |
-    <a href="/profiles">Все профили</a>
-    <?php if (\App\Core\Session::isLoggedIn()): ?>
-        | <a href="/settings">Настройки</a>
-    <?php endif; ?>
-</nav>
-
 <h1>Разработчики на GameFolio</h1>
 
+<form method="GET" action="/profiles" class="search-filters">
+    <input type="text" name="q" value="<?= htmlspecialchars($currentQuery ?? '') ?>"
+           placeholder="Поиск по никнейму или логину...">
+    <button type="submit" class="btn">Найти</button>
+    <?php if (!empty($currentQuery)): ?>
+        <a href="/profiles" class="btn btn-outline">Сбросить</a>
+    <?php endif; ?>
+</form>
+
 <?php if (empty($users)): ?>
-    <p>Пока никто не зарегистрировался.</p>
+    <p>Пользователи не найдены.</p>
 <?php else: ?>
-    <ul>
+    <div class="card-grid">
         <?php foreach ($users as $user): ?>
-            <li>
-                <strong><?= htmlspecialchars($user->nickname) ?></strong>
-                (логин: <?= htmlspecialchars($user->login) ?>)
-                <br>
-                <em><?= htmlspecialchars($user->bio ?? 'Нет описания') ?></em>
-                <br>
-                <a href="/profiles/<?= $user->id ?>">Открыть профиль</a>
-            </li>
-            <br>
+            <div class="card">
+                <h3><a href="/profiles/<?= $user->id ?>"><?= htmlspecialchars($user->nickname) ?></a></h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                    @<?= htmlspecialchars($user->login) ?>
+                </p>
+                <p><?= htmlspecialchars(mb_substr($user->bio ?? 'Нет описания', 0, 100)) ?></p>
+            </div>
         <?php endforeach; ?>
-    </ul>
+    </div>
 <?php endif; ?>
-</body>
-</html>

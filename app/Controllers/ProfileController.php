@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\View;
+use App\Models\Repositories\GameRepository;
 use App\Models\Repositories\UserRepository;
 
 class ProfileController
@@ -20,14 +21,20 @@ class ProfileController
 
     public function index(Request $request, array $params): void
     {
-        $users = $this->userRepo->findAll();
-        $this->view->render('pages/profiles', [
+        $query = trim((string) $request->get('q'));
+        if ($query !== '') {
+            $users = $this->userRepo->search($query);
+        } else {
+            $users = $this->userRepo->findAll();
+        }
+
+        $this->view->renderWithLayout('pages/profiles', [
+            'pageTitle' => 'Все профили — GameFolio',
             'users' => $users,
-            'title' => 'Все профили — GameFolio'
+            'currentQuery' => $query,
         ]);
     }
 
-    // Страница одного профиля (GET /profiles/{id})
     public function show(Request $request, array $params): void
     {
         $id = (int) $params['id'];
@@ -38,14 +45,13 @@ class ProfileController
             return;
         }
 
-        // Получаем игры этого автора
-        $gameRepo = new \App\Models\Repositories\GameRepository();
+        $gameRepo = new GameRepository();
         $games = $gameRepo->findByAuthor($id);
 
-        $this->view->render('pages/profile_details', [
+        $this->view->renderWithLayout('pages/profile_details', [
             'user' => $user,
             'games' => $games,
-            'title' => htmlspecialchars($user->nickname) . ' — GameFolio'
+            'pageTitle' => htmlspecialchars($user->nickname) . ' — GameFolio'
         ]);
     }
 }

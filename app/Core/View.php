@@ -23,4 +23,16 @@ class View
 
         require $file;
     }
+
+    public function renderWithLayout(string $template, array $data = []): void
+    {
+        ob_start();
+        $this->render($template, $data);
+        $pageContent = ob_get_clean();
+
+        $theme = Theme::current();
+        $lang = I18n::currentLang();
+
+        require $this->templatesPath . 'layout.php';
+    }
 }

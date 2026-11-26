@@ -25,11 +25,11 @@ class SettingsController
         $userId = Session::userId();
         $user = $this->userRepo->findById($userId);
 
-        $this->view->render('pages/settings', [
+        $this->view->renderWithLayout('pages/settings', [
             'user' => $user,
             'error' => Session::flash('error'),
             'success' => Session::flash('success'),
-            'title' => 'Настройки аккаунта — GameFolio'
+            'pageTitle' => 'Настройки аккаунта — GameFolio'
         ]);
     }
 
@@ -108,9 +108,7 @@ class SettingsController
             return;
         }
 
-        // Удаляем аккаунт (каскадно удалятся игры, комментарии, лайки)
         $this->userRepo->deleteAccount($userId);
-
         Session::destroy();
         Session::flash('success', 'Аккаунт удалён');
         Response::redirect('/');

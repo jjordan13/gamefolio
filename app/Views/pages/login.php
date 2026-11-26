@@ -1,43 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Вход — GameFolio</title>
-</head>
-<body>
 <h1>Вход в GameFolio</h1>
 
 <?php if (!empty($error)): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+    <p class="error"><?= htmlspecialchars($error) ?></p>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <p style="color: green;"><?= htmlspecialchars($success) ?></p>
+    <p class="success"><?= htmlspecialchars($success) ?></p>
 <?php endif; ?>
 
 <form method="POST" action="/login">
-    <label>
-        Логин:<br>
-        <input type="text" name="login" required>
-    </label>
-    <br><br>
+    <div class="form-group">
+        <label for="login">Логин</label>
+        <input type="text" id="login" name="login" required>
+    </div>
 
-    <label>
-        Пароль:<br>
-        <input type="password" name="password" required>
-    </label>
-    <br><br>
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required>
+    </div>
 
-    <label>
-        <input type="checkbox" name="remember" value="1">
-        Запомнить меня
-    </label>
-    <br><br>
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="remember" value="1">
+            Запомнить меня
+        </label>
+    </div>
 
-    <button type="submit">Войти</button>
+    <button type="submit" class="btn">Войти</button>
 </form>
 
-<p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
-<p><a href="/">На главную</a></p>
-</body>
-</html>
+<p style="margin-top: 16px;">Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>

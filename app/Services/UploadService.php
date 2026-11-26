@@ -7,13 +7,11 @@ class UploadService
 {
     private string $uploadDir;
     private array $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    private int $maxSize = 5 * 1024 * 1024; // 5 MB
+    private int $maxSize = 5 * 1024 * 1024;
 
     public function __construct()
     {
         $this->uploadDir = dirname(__DIR__, 2) . '/public/uploads/';
-
-        // Создаём папку, если её нет
         if (!is_dir($this->uploadDir)) {
             mkdir($this->uploadDir, 0755, true);
         }
@@ -53,18 +51,9 @@ class UploadService
         return null;
     }
 
-    public function deleteFile(string $path): void
-    {
-        $fullPath = dirname(__DIR__, 2) . $path;
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
-    }
-
     public function uploadMultipleFiles(array $files, string $subdir = ''): array
     {
         $uploadedPaths = [];
-
         foreach ($files['tmp_name'] as $index => $tmpName) {
             $file = [
                 'name' => $files['name'][$index],
@@ -73,13 +62,19 @@ class UploadService
                 'error' => $files['error'][$index],
                 'size' => $files['size'][$index],
             ];
-
             $path = $this->uploadFile($file, $subdir);
             if ($path) {
                 $uploadedPaths[] = $path;
             }
         }
-
         return $uploadedPaths;
+    }
+
+    public function deleteFile(string $path): void
+    {
+        $fullPath = dirname(__DIR__, 2) . $path;
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
     }
 }

@@ -78,7 +78,6 @@ class AuthController
         Response::redirect('/login');
     }
 
-    // Показ формы входа (GET /login)
     public function loginForm(Request $request, array $params): void
     {
         $this->view->render('pages/login', [
@@ -87,7 +86,6 @@ class AuthController
         ]);
     }
 
-// Обработка входа (POST /login)
     public function login(Request $request, array $params): void
     {
         $login = trim((string) $request->post('login'));
@@ -114,15 +112,12 @@ class AuthController
             return;
         }
 
-        // Фиксируем сессию (защита от session fixation)
         Session::regenerate();
         Session::set('user_id', $user->id);
         Session::set('user_nickname', $user->nickname);
 
-        // TODO: полноценная реализация "Запомнить меня" через remember_tokens
-        // пока просто увеличиваем время жизни сессионной cookie
         if ($remember) {
-            $lifetime = 60 * 60 * 24 * 30; // 30 дней
+            $lifetime = 60 * 60 * 24 * 30;
             if (ini_get('session.use_cookies')) {
                 $params = session_get_cookie_params();
                 setcookie(
@@ -140,7 +135,6 @@ class AuthController
         Response::redirect('/');
     }
 
-// Выход (GET /logout)
     public function logout(Request $request, array $params): void
     {
         Session::destroy();

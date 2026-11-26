@@ -14,7 +14,6 @@ class Game
     public ?string $genre;
     public ?string $release_date;
     public ?string $cover_url;
-
     public ?string $author_nickname = null;
 
     public static function fromArray(array $data): self

@@ -15,7 +15,6 @@ class User
     public string $theme;
     public string $lang;
 
-    // Метод для создания объекта из массива (строки БД)
     public static function fromArray(array $data): self
     {
         $user = new self();

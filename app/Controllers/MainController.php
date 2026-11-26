@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\I18n;
 use App\Core\Request;
 use App\Core\View;
 
@@ -17,13 +18,13 @@ class MainController
 
     public function index(Request $request, array $params): void
     {
-        $this->view->render('pages/home', [
-            'title' => 'GameFolio - Главная',
+        $this->view->renderWithLayout('pages/home', [
+            'pageTitle' => I18n::t('site_name'),
             'features' => [
-                'Портфолио разработчиков игр',
-                'Карточки проектов с медиагалереей',
-                'Теги движков и жанров',
-                'Поиск и фильтрация',
+                I18n::t('feature_portfolio'),
+                I18n::t('feature_cards'),
+                I18n::t('feature_tags'),
+                I18n::t('feature_search'),
             ],
         ]);
     }

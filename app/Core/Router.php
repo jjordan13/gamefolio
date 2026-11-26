@@ -39,12 +39,10 @@ class Router
 
             $params = $this->match($route['pattern'], $uri);
             if ($params !== null) {
-                // 1. Сначала прогоняем все middleware
                 foreach ($route['middlewares'] as $middleware) {
                     $middleware->handle($request);
                 }
 
-                // 2. Если middleware не сделали редирект, вызываем контроллер
                 $handler = $route['handler'];
 
                 if (is_array($handler)) {

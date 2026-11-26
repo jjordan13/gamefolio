@@ -40,6 +40,13 @@ class Session
         $_SESSION = [];
     }
 
+    public static function regenerate(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+    }
+
     public static function userId(): ?int
     {
         return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
@@ -48,12 +55,5 @@ class Session
     public static function isLoggedIn(): bool
     {
         return self::userId() !== null;
-    }
-
-    public static function regenerate(): void
-    {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_regenerate_id(true);
-        }
     }
 }

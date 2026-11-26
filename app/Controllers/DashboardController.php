@@ -18,7 +18,8 @@ class DashboardController
 
     public function index(Request $request, array $params): void
     {
-        $this->view->render('pages/dashboard', [
+        $this->view->renderWithLayout('pages/dashboard', [
+            'pageTitle' => 'Личный кабинет — GameFolio',
             'nickname' => Session::get('user_nickname', 'Гость'),
         ]);
     }

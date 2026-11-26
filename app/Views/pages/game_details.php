@@ -1,151 +1,136 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
-    <style>
-        /* Минимальные стили для имитации Steam, чтобы было понятно, где что */
-        .steam-container { max-width: 940px; margin: 0 auto; font-family: sans-serif; color: #c7d5e0; background: #1b2838; padding: 20px; }
-        .steam-header { border-bottom: 1px solid #2a475e; padding-bottom: 10px; margin-bottom: 20px; }
-        .steam-main { display: flex; gap: 20px; }
-        .steam-gallery { flex: 2; background: #000; height: 350px; display: flex; align-items: center; justify-content: center; }
-        .steam-gallery img { max-width: 100%; max-height: 100%; }
-        .steam-info { flex: 1; background: #171a21; padding: 15px; }
-        .steam-desc { margin-top: 20px; background: #171a21; padding: 15px; }
-        .tag { display: inline-block; background: #2a475e; padding: 2px 8px; margin: 2px; border-radius: 2px; font-size: 12px; }
-        .media-list img { max-width: 100px; margin-right: 5px; }
-    </style>
-</head>
-<body>
-<div class="steam-container">
-    <nav>
-        <a href="/">Главная</a> | <a href="/games">Все игры</a>
-        <?php if (\App\Core\Session::isLoggedIn()): ?>
-            | <a href="/settings">Настройки</a>
-        <?php endif; ?>
-    </nav>
+<div class="game-header">
+    <h1><?= htmlspecialchars($game['title']) ?></h1>
+    <p class="game-author">Разработчик: <a href="/profiles/<?= $game['author_id'] ?>"><?= htmlspecialchars($game['author_nickname']) ?></a></p>
+</div>
 
-    <?php if (!empty($success)): ?>
-        <p style="color: green;"><?= htmlspecialchars($success) ?></p>
-    <?php endif; ?>
-    <?php if (!empty($error)): ?>
-        <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
+<?php if (!empty($success)): ?>
+    <p class="success"><?= htmlspecialchars($success) ?></p>
+<?php endif; ?>
+<?php if (!empty($error)): ?>
+    <p class="error"><?= htmlspecialchars($error) ?></p>
+<?php endif; ?>
 
-    <div class="steam-header">
-        <h1><?= htmlspecialchars($game['title']) ?></h1>
-        <p>Разработчик: <strong><?= htmlspecialchars($game['author_nickname']) ?></strong></p>
-    </div>
-
-    <div class="steam-main">
-        <!-- Левая часть: Галерея -->
-        <div class="steam-gallery">
-            <?php
-            // Берем первое медиа как обложку/главное фото
-            $cover = !empty($game['media']) ? $game['media'][0]['url'] : 'https://via.placeholder.com/600x350?text=No+Image';
-            ?>
-            <img src="<?= htmlspecialchars($cover) ?>" alt="<?= htmlspecialchars($game['title']) ?>">
-        </div>
-
-        <!-- Правая часть: Карточка с инфой -->
-        <div class="steam-info">
-            <h3>Об игре</h3>
-            <?php if (\App\Core\Session::userId() === (int) $game['author_id']): ?>
-                <div>
-                    <a href="/games/<?= $game['id'] ?>/edit">Редактировать игру</a>
-
-                    <form method="POST" action="/games/<?= $game['id'] ?>/delete"
-                          onsubmit="return confirm('Удалить игру безвозвратно?');">
-                        <button type="submit">Удалить игру</button>
-                    </form>
+<div class="game-main">
+    <!-- Карусель медиа -->
+    <div class="media-carousel">
+        <div class="media-carousel-inner" id="mediaCarousel">
+            <?php if (empty($game['media'])): ?>
+                <div class="media-carousel-item">
+                    <img src="https://via.placeholder.com/800x450?text=No+Media" alt="No media">
                 </div>
-            <?php endif; ?>
-            <p><?= htmlspecialchars($game['short_description'] ?? 'Описание отсутствует') ?></p>
-
-            <p><strong>Движок:</strong> <?= htmlspecialchars($game['engine'] ?? 'Не указан') ?></p>
-            <p><strong>Жанр:</strong> <?= htmlspecialchars($game['genre'] ?? 'Не указан') ?></p>
-
-            <h4>Теги:</h4>
-            <div>
-                <?php foreach ($game['tags'] as $tag): ?>
-                    <span class="tag"><?= htmlspecialchars($tag['name']) ?></span>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- Нижняя часть: Подробное описание и остальные медиа -->
-    <div class="steam-desc">
-        <h2>Подробное описание</h2>
-        <p><?= nl2br(htmlspecialchars($game['full_description'] ?? 'Подробное описание не добавлено.')) ?></p>
-
-        <h3>Медиагалерея</h3>
-        <div class="media-list">
-            <?php foreach ($game['media'] as $media): ?>
-                <img src="<?= htmlspecialchars($media['url']) ?>" alt="media">
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Лайки -->
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a475e;">
-            <h3>Оценка сообщества</h3>
-            <p>Лайков: <strong><?= (int) $likeCount ?></strong></p>
-
-            <?php if (\App\Core\Session::isLoggedIn()): ?>
-                <form method="POST" action="/games/<?= $game['id'] ?>/like" style="display: inline;">
-                    <button type="submit">
-                        <?= $isLiked ? '❤️ Снять лайк' : '🤍 Поставить лайк' ?>
-                    </button>
-                </form>
             <?php else: ?>
-                <p><a href="/login">Войдите</a>, чтобы оценить игру</p>
-            <?php endif; ?>
-        </div>
-
-        <!-- Комментарии -->
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a475e;">
-            <h3>Комментарии (<?= count($comments) ?>)</h3>
-
-            <?php if (\App\Core\Session::isLoggedIn()): ?>
-                <form method="POST" action="/games/<?= $game['id'] ?>/comment" style="margin-bottom: 20px;">
-                    <textarea name="content" rows="3" cols="60" required placeholder="Напишите комментарий..."></textarea>
-                    <br>
-                    <button type="submit">Отправить</button>
-                </form>
-            <?php else: ?>
-                <p><a href="/login">Войдите</a>, чтобы оставить комментарий</p>
-            <?php endif; ?>
-
-            <?php if (empty($comments)): ?>
-                <p>Комментариев пока нет. Будьте первым!</p>
-            <?php else: ?>
-                <?php foreach ($comments as $comment): ?>
-                    <div style="background: #171a21; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong style="color: #66c0f4;">
-                                <?= htmlspecialchars($comment['author_nickname']) ?>
-                            </strong>
-                            <small style="color: #8f98a0;">
-                                <?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?>
-                            </small>
-                        </div>
-                        <p style="margin: 8px 0 0 0;"><?= nl2br(htmlspecialchars($comment['content'])) ?></p>
-
-                        <?php if (\App\Core\Session::userId() === (int) $comment['user_id']): ?>
-                            <form method="POST" action="/comments/<?= $comment['id'] ?>/delete"
-                                  style="display: inline; margin-top: 8px;"
-                                  onsubmit="return confirm('Удалить комментарий?');">
-                                <button type="submit" style="background: none; border: none; color: #ff6b6b; cursor: pointer; padding: 0;">
-                                    Удалить
-                                </button>
-                            </form>
-                        <?php endif; ?>
+                <?php foreach ($game['media'] as $media): ?>
+                    <div class="media-carousel-item">
+                        <img src="<?= htmlspecialchars($media['url']) ?>" alt="<?= htmlspecialchars($game['title']) ?>">
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
 
+        <?php if (count($game['media'] ?? []) > 1): ?>
+            <div class="carousel-controls">
+                <button type="button" class="carousel-btn" onclick="scrollCarousel(-1)">‹</button>
+                <button type="button" class="carousel-btn" onclick="scrollCarousel(1)">›</button>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Инфо-блок -->
+    <div class="game-info">
+        <h3>Об игре</h3>
+        <p><?= htmlspecialchars($game['short_description'] ?? 'Описание отсутствует') ?></p>
+
+        <p><strong>Движок:</strong> <?= htmlspecialchars($game['engine'] ?? 'Не указан') ?></p>
+        <p><strong>Жанр:</strong> <?= htmlspecialchars($game['genre'] ?? 'Не указан') ?></p>
+
+        <h4>Теги:</h4>
+        <div>
+            <?php if (empty($gameTags)): ?>
+                <span style="color: var(--text-secondary);">Теги не указаны</span>
+            <?php else: ?>
+                <?php foreach ($gameTags as $tag): ?>
+                    <a href="/games?tag=<?= $tag['id'] ?>" class="tag"><?= htmlspecialchars($tag['name']) ?></a>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <?php if (\App\Core\Session::userId() === (int) $game['author_id']): ?>
+            <div style="margin-top: 20px;">
+                <a href="/games/<?= $game['id'] ?>/edit" class="btn">Редактировать</a>
+                <form method="POST" action="/games/<?= $game['id'] ?>/delete"
+                      style="display: inline; margin-left: 10px;"
+                      onsubmit="return confirm('Удалить игру безвозвратно?');">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
-</body>
-</html>
+
+<div class="game-description">
+    <h2>Подробное описание</h2>
+    <p><?= nl2br(htmlspecialchars($game['full_description'] ?? 'Подробное описание не добавлено.')) ?></p>
+</div>
+
+<!-- Лайки -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3>Оценка сообщества</h3>
+    <p>Лайков: <strong><?= (int) $likeCount ?></strong></p>
+
+    <?php if (\App\Core\Session::isLoggedIn()): ?>
+        <form method="POST" action="/games/<?= $game['id'] ?>/like" style="display: inline;">
+            <button type="submit" class="btn">
+                <?= $isLiked ? '❤️ Снять лайк' : '🤍 Поставить лайк' ?>
+            </button>
+        </form>
+    <?php else: ?>
+        <p><a href="/login">Войдите</a>, чтобы оценить игру</p>
+    <?php endif; ?>
+</div>
+
+<!-- Комментарии -->
+<div class="comments-section">
+    <h3>Комментарии (<?= count($comments) ?>)</h3>
+
+    <?php if (\App\Core\Session::isLoggedIn()): ?>
+        <form method="POST" action="/games/<?= $game['id'] ?>/comment" style="margin-bottom: 20px;">
+            <textarea name="content" rows="3" required placeholder="Напишите комментарий..."></textarea>
+            <br><br>
+            <button type="submit" class="btn">Отправить</button>
+        </form>
+    <?php else: ?>
+        <p><a href="/login">Войдите</a>, чтобы оставить комментарий</p>
+    <?php endif; ?>
+
+    <?php if (empty($comments)): ?>
+        <p>Комментариев пока нет. Будьте первым!</p>
+    <?php else: ?>
+        <?php foreach ($comments as $comment): ?>
+            <div class="comment">
+                <div class="comment-header">
+                    <span class="comment-author"><?= htmlspecialchars($comment['author_nickname']) ?></span>
+                    <span class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></span>
+                </div>
+                <p class="comment-content"><?= nl2br(htmlspecialchars($comment['content'])) ?></p>
+
+                <?php if (\App\Core\Session::userId() === (int) $comment['user_id']): ?>
+                    <form method="POST" action="/comments/<?= $comment['id'] ?>/delete"
+                          style="display: inline; margin-top: 8px;"
+                          onsubmit="return confirm('Удалить комментарий?');">
+                        <button type="submit" style="background: none; border: none; color: var(--error); cursor: pointer;">
+                            Удалить
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
+<script>
+    function scrollCarousel(direction) {
+        const carousel = document.getElementById('mediaCarousel');
+        const scrollAmount = carousel.offsetWidth;
+        carousel.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+</script>
